@@ -1,3 +1,5 @@
+require 'active_support'
+require 'active_support/core_ext'
 require 'dotenv'
 require 'dotenv/tasks'
 require 'flickr_fu'
@@ -34,23 +36,23 @@ task auth: :dotenv do
 end
 
 task notify: :dotenv do
-  def today?(time)
-    @today ||= Date.today
-
-    time.year == @today.year && time.month == @today.month && time.day == @today.day
-  end
-
   flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET'], token: ENV['TOKEN']})
 
   ps = Flickr::Photosets.new(flickr)
 
   list = ps.get_list
 
-  photoset = list.find {|i| i.title == 'すず' }
+  photoset = list.find {|i| i.title == ENV['TARGET_ALBUM'] }
 
-  photo = photoset.get_photos(extras: 'date_upload', per_page: 1).first
+  photos = photoset.get_photos(extras: 'date_upload', per_page: 20)
 
-  if today?(photo.uploaded_at)
-    Pony.mail(to: 'dany1468+test@gmail.com', subject: 'しゃしんが追加されました')
+  if photos.find {|photo| photo.uploaded_at.in_time_zone('Tokyo').today? }
+    body = <<-BODY.strip_heredoc
+      #{ENV['MAIL_MESSAGE']}
+
+      #{ENV['ALBUM_URL']}
+    BODY
+
+    Pony.mail(to: ENV['SEND_TARGET_EMAILS'], subject: ENV['MAIL_SUBJECT'], body: body)
   end
 end
