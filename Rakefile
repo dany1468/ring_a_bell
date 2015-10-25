@@ -1,17 +1,21 @@
+require 'dotenv'
 require 'dotenv/tasks'
 require 'flickr_fu'
+require 'pony'
+
+Dotenv.load
 
 Pony.options = {
+  charset: 'utf-8',
   via: :smtp,
   via_options: {
-    address: 'smtp.sendgrid.net',
+    address: 'smtp.gmail.com',
     port: '587',
-    domain: 'heroku.com',
-    user_name: ENV['SENDGRID_USERNAME'],
-    password: ENV['SENDGRID_PASSWORD'],
-    authentication: :plain,
     enable_starttls_auto: true,
-    from: 'dany1468@gmail.com'
+    user_name: ENV['GMAIL_ACCOUNT'],
+    password: ENV['GMAIL_PASSWORD'],
+    domain: 'gmail.com',
+    authentication: :login,
   }
 }
 
@@ -36,7 +40,7 @@ task notify: :dotenv do
     time.year == @today.year && time.month == @today.month && time.day == @today.day
   end
 
-  flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET'], token: ENV['token']})
+  flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET'], token: ENV['TOKEN']})
 
   ps = Flickr::Photosets.new(flickr)
 
