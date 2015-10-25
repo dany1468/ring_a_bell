@@ -46,7 +46,7 @@ task notify: :dotenv do
 
   photos = photoset.get_photos(extras: 'date_upload', per_page: 20)
 
-  if photos.find {|photo| photo.uploaded_at.in_time_zone('Tokyo').today? }
+  if photos.find {|photo| photo.uploaded_at.in_time_zone('Tokyo').yesterday? }
     body = <<-BODY.strip_heredoc
       #{ENV['MAIL_MESSAGE']}
 
