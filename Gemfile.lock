@@ -1,0 +1,41 @@
+GIT
+  remote: git://github.com/dany1468/flickr_fu.git
+  revision: bb20606c956e43a6886127a8c927e8446e69a799
+  branch: add_creation_attributes
+  specs:
+    flickr_fu (0.3.4)
+      mime-types
+      xml-magic
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    byebug (5.0.0)
+      columnize (= 0.9.0)
+    coderay (1.1.0)
+    columnize (0.9.0)
+    dotenv (2.0.2)
+    method_source (0.8.2)
+    mime-types (2.6.2)
+    pry (0.10.3)
+      coderay (~> 1.1.0)
+      method_source (~> 0.8.1)
+      slop (~> 3.4)
+    pry-byebug (3.2.0)
+      byebug (~> 5.0)
+      pry (~> 0.10)
+    rake (10.4.2)
+    slop (3.6.0)
+    xml-magic (0.1.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  dotenv
+  flickr_fu!
+  pry-byebug
+  rake
+
+BUNDLED WITH
+   1.10.4
