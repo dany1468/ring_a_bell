@@ -46,7 +46,8 @@ task notify: :dotenv do
 
   photos = photoset.get_photos(extras: 'date_upload', per_page: 20)
 
-  if photos.find {|photo| photo.uploaded_at.in_time_zone('Tokyo').yesterday? }
+  yesterday = Time.now.in_time_zone('Tokyo').yesterday.to_date
+  if photos.find {|photo| photo.uploaded_at.in_time_zone('Tokyo').to_date == yesterday }
     body = <<-BODY.strip_heredoc
       #{ENV['MAIL_MESSAGE']}
 
@@ -54,5 +55,6 @@ task notify: :dotenv do
     BODY
 
     Pony.mail(to: ENV['SEND_TARGET_EMAILS'], subject: ENV['MAIL_SUBJECT'], body: body)
+    puts 'Send mail done.'
   end
 end
