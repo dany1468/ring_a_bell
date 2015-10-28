@@ -57,7 +57,7 @@ task notify: :dotenv do
   yesterday = jst_now.yesterday.to_date
 
   if photo = photos.find {|photo| photo.uploaded_at.in_time_zone('Tokyo').to_date == yesterday }
-    subject = "[#{jst_now.strftime('%m/%d')}] #{ENV['MAIL_SUBJECT']}"
+    subject = "[#{jst_now.strftime('%-m/%-d')}] #{ENV['MAIL_SUBJECT']}"
     body = <<-BODY.strip_heredoc
       #{ENV['MAIL_MESSAGE']}
 
