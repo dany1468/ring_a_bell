@@ -3,6 +3,7 @@ require 'active_support/core_ext'
 require 'dotenv'
 require 'dotenv/tasks'
 require 'flickr_fu'
+require 'open-uri'
 require 'pony'
 
 Dotenv.load
@@ -36,6 +37,12 @@ task auth: :dotenv do
 end
 
 task notify: :dotenv do
+  def image_file(image_url)
+    open(image_url) do |data|
+      return data.read
+    end
+  end
+
   flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET'], token: ENV['TOKEN']})
 
   ps = Flickr::Photosets.new(flickr)
@@ -49,7 +56,7 @@ task notify: :dotenv do
   jst_now = Time.now.in_time_zone('Tokyo')
   yesterday = jst_now.yesterday.to_date
 
-  if photos.find {|photo| photo.uploaded_at.in_time_zone('Tokyo').to_date == yesterday }
+  if photo = photos.find {|photo| photo.uploaded_at.in_time_zone('Tokyo').to_date == yesterday }
     subject = "[#{jst_now.strftime('%m/%d')}] #{ENV['MAIL_SUBJECT']}"
     body = <<-BODY.strip_heredoc
       #{ENV['MAIL_MESSAGE']}
@@ -57,7 +64,12 @@ task notify: :dotenv do
       #{ENV['ALBUM_URL']}
     BODY
 
-    Pony.mail(to: ENV['SEND_TARGET_EMAILS'], subject: subject, body: body)
+    Pony.mail(
+      to: ENV['SEND_TARGET_EMAILS'],
+      subject: subject,
+      body: body,
+      attachments: {'today_top_image.jpg' => image_file(photo.url(:medium))}
+    )
     puts 'Send mail done.'
   end
 end
