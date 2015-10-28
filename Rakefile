@@ -68,7 +68,7 @@ task notify: :dotenv do
       to: ENV['SEND_TARGET_EMAILS'],
       subject: subject,
       body: body,
-      attachments: {'today_top_image.jpg' => image_file(photo.url(:medium))}
+      attachments: {"#{jst_now.strftime('%Y%m%d')}.jpg" => image_file(photo.url(:medium))}
     )
     puts 'Send mail done.'
   end
