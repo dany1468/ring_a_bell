@@ -29,7 +29,7 @@ MAIL_MESSAGE=""
 ```
 
 > ローカルで動作確認をしない場合には、後述する事前準備で必要になる項目のみ設定します。
-> それ以外は、heroku に設定します。
+> それ以外は、Heroku に設定します。
 
 ### 事前準備
 
@@ -93,3 +93,29 @@ Flickr 上のアルバム名を指定してください。日本語のアルバ�
 ### MAIL_MESSAGE
 
 通知メールの本文に利用します。
+
+### Heroku での運用方法
+
+#### 設定項目
+
+全ての設定項目を Heroku に設定します。
+
+```
+% heroku config:set ACCESS_KEY="..."
+以下全項目分
+```
+
+#### スケジュール設定
+
+一日に一度実行したいので、お好きなスケジューラを利用してください。
+
+[Heroku Scheduler](https://devcenter.heroku.com/articles/scheduler) を利用する場合は以下の手順です。
+
+```
+% heroku addons:create scheduler:standard
+% heroku addons:open scheduler
+```
+
+ブラウザで dashboard が表示されるので、`rake notify` のコマンドを指定します。
+
+時刻については、前日の追加情報を通知するため、朝を指定した方がいいかもしれません。
