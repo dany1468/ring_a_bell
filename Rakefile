@@ -5,6 +5,7 @@ require 'dotenv/tasks'
 require 'flickr_fu'
 require 'open-uri'
 require 'pony'
+require 'pry'
 
 Dotenv.load
 
@@ -71,5 +72,37 @@ task notify: :dotenv do
       attachments: {"#{jst_now.strftime('%Y%m%d')}.jpg" => image_file(photo.url(:medium))}
     )
     puts 'Send mail done.'
+  end
+end
+
+task download_photos: :dotenv do
+  MAX_DOWNLOAD_SIZE = 500
+
+  def save_image(image_url, file_name)
+    full_path = File.join('download', file_name)
+
+    open(full_path, 'wb') do |output|
+      open(image_url) do |data|
+        output.write data.read
+      end
+    end
+  end
+
+  flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET'], token: ENV['TOKEN']})
+
+  ps = Flickr::Photosets.new(flickr)
+
+  list = ps.get_list
+
+  photoset = list.find {|i| i.title == ENV['TARGET_ALBUM'] }
+
+  photos = photoset.get_photos(extras: 'date_upload,original_format', per_page: MAX_DOWNLOAD_SIZE, media: 'photos')
+
+  puts "downloading photo count: #{photos.size}"
+
+  Dir.mkdir('download') unless Dir.exist?('download')
+
+  photos.each do |photo|
+    save_image photo.url(:original), "#{photo.title}.#{photo.original_format}"
   end
 end
