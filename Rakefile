@@ -30,11 +30,34 @@ task auth: :dotenv do
   puts 'and see token_cache.yml. '
   puts 'set the token that is written in it to the environment variable of heroku.'
 
-  puts flickr.auth.url(:read)
+  puts flickr.auth.url(:write)
 
   STDIN.gets
 
   puts flickr.auth.cache_token ? 'success' : 'failure'
+end
+
+task reorder: :dotenv do
+  flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET'], token: ENV['TOKEN']})
+
+  photoset = Flickr::Photosets.new(flickr).get_list.find {|i| i.title == ENV['TARGET_ALBUM'] }
+
+  all_photo_size = photoset.num_photos.to_i
+
+  all_photos = []
+
+  all_pages = (all_photo_size / 100) + 1
+
+  for page in 1..all_pages
+    photos = photoset.get_photos(extras: 'date_upload', per_page: 100, page: page)
+
+    all_photos << photos
+  end
+
+  reordered_ids = all_photos.flatten.sort_by(&:uploaded_at).reverse.map(&:id)
+
+  # TODO place in flickr_fu gem
+  flickr.send_request('flickr.photosets.reorderPhotos', {photoset_id: photoset.id, photo_ids: reordered_ids.join(',')}, :post)
 end
 
 task notify: :dotenv do
