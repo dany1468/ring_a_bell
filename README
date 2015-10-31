@@ -1,8 +1,0 @@
-# Ring a Bell
-
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-
-
-## 概要
-
-Flickr のアルバムに写真が追加されたことを、一日に一度家族にメールで通知します。
