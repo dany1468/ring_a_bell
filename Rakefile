@@ -24,7 +24,7 @@ Pony.options = {
 }
 
 task auth: :dotenv do
-  flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET'], token_cache: 'token_cache.yml'})
+  flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET']}, token_cache: 'token_cache.yml')
 
   puts 'visit the following url, then click <enter> once you have authorized.'
   puts 'and see token_cache.yml. '
