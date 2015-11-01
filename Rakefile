@@ -129,3 +129,39 @@ task download_photos: :dotenv do
     save_image photo.url(:original), "#{photo.title}.#{photo.original_format}"
   end
 end
+
+task export_print_photos: :dotenv do
+  def save_image(image_url, file_name)
+    full_path = File.join('download', file_name)
+
+    open(full_path, 'wb') do |output|
+      open(image_url) do |data|
+        output.write data.read
+      end
+    end
+  end
+
+  flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET'], token: ENV['TOKEN']})
+
+  photoset = Flickr::Photosets.new(flickr).get_list.find {|i| i.title == ENV['TARGET_ALBUM'] }
+
+  all_photo_size = photoset.num_photos.to_i
+
+  all_photos = []
+
+  all_pages = (all_photo_size / 100) + 1
+
+  for page in 1..all_pages
+    photos = photoset.get_photos(extras: 'date_upload,original_format,tags', per_page: 100, page: page)
+
+    all_photos << photos
+  end
+
+  Dir.mkdir('download') unless Dir.exist?('download')
+
+  all_photos.flatten.reject {|photo| photo.tags.include?('printed') }.each do |photo|
+    save_image photo.url(:original), "#{photo.title}.#{photo.original_format}"
+
+    puts "It failed to add tags. photo_id:#{photo.id}" unless photo.add_tags('printed')
+  end
+end
