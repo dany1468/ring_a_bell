@@ -7,8 +7,6 @@ require 'open-uri'
 require 'pony'
 require 'pry'
 
-Dotenv.load
-
 Pony.options = {
   charset: 'utf-8',
   via: :smtp,
