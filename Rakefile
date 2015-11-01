@@ -35,6 +35,8 @@ task auth: :dotenv do
   puts flickr.auth.cache_token ? 'success' : 'failure'
 end
 
+task reorder_and_notify: %i(reorder notify)
+
 task reorder: :dotenv do
   flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET'], token: ENV['TOKEN']})
 
