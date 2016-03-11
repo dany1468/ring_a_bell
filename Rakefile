@@ -38,26 +38,36 @@ end
 task reorder_and_notify: %i(reorder notify)
 
 task reorder: :dotenv do
+  def load_photos(photoset, page = 1, all_photos = [])
+    photos = photoset.get_photos(extras: 'date_upload', per_page: 100, page: page)
+
+    return all_photos.flatten if photos.size == 0
+
+    all_photos << photos
+
+    load_photos(photoset, (page + 1), all_photos)
+  rescue Flickr::Error => e
+    # NOTE 存在しないところまでページングが進むとエラーになるため、その場合は終了として値を返す
+    return all_photos if message.include?('not found')
+
+    raise
+  end
+
   flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET'], token: ENV['TOKEN']})
 
   photoset = Flickr::Photosets.new(flickr).get_list.find {|i| i.title == ENV['TARGET_ALBUM'] }
 
   all_photo_size = photoset.num_photos.to_i
 
-  all_photos = []
+  all_photos = load_photos(photoset)
 
-  all_pages = (all_photo_size / 100) + 1
+  reordered_ids = all_photos.flatten.sort_by(&:uploaded_at).reverse.map(&:id).uniq
 
-  for page in 1..all_pages
-    photos = photoset.get_photos(extras: 'date_upload', per_page: 100, page: page)
-
-    all_photos << photos
-  end
-
-  reordered_ids = all_photos.flatten.sort_by(&:uploaded_at).reverse.map(&:id)
+  puts "all_photo_size:#{all_photo_size} reordered_size:#{reordered_ids.size}"
 
   # TODO place in flickr_fu gem
   flickr.send_request('flickr.photosets.reorderPhotos', {photoset_id: photoset.id, photo_ids: reordered_ids.join(',')}, :post)
+  puts 'reorder done'
 end
 
 task notify: :dotenv do
@@ -160,6 +170,9 @@ task export_print_photos: :dotenv do
   Dir.mkdir('download') unless Dir.exist?('download')
 
   all_photos.flatten.reject {|photo| photo.tags.include?('printed') }.each do |photo|
+    puts "title:#{photo.title} url:#{photo.url(:original)}"
+    next unless photo.url(:original)
+
     save_image photo.url(:original), "#{photo.title}.#{photo.original_format}"
 
     puts "It failed to add tags. photo_id:#{photo.id}" unless photo.add_tags('printed')
