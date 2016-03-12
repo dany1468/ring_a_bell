@@ -1,7 +1,7 @@
 GIT
   remote: git://github.com/dany1468/flickr_fu.git
-  revision: bb20606c956e43a6886127a8c927e8446e69a799
-  branch: add_creation_attributes
+  revision: ed61cf9afe0a3f68e269f39e76444f8c2bdf90f9
+  branch: for_ring_a_bell
   specs:
     flickr_fu (0.3.4)
       mime-types
