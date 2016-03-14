@@ -43,7 +43,7 @@ task reorder: :dotenv do
 
     (1..all_pages).inject([]) {|all_photos, page|
       all_photos << photoset.get_photos(extras: 'date_upload', per_page: 100, page: page)
-    }
+    }.flatten
   end
 
   flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET'], token: ENV['TOKEN']})
@@ -52,7 +52,7 @@ task reorder: :dotenv do
 
   all_photos = load_photos(photoset)
 
-  reordered_ids = all_photos.flatten.sort_by(&:uploaded_at).reverse.map(&:id).uniq
+  reordered_ids = all_photos.sort_by(&:uploaded_at).reverse.map(&:id).uniq
 
   # TODO place in flickr_fu gem
   flickr.send_request('flickr.photosets.reorderPhotos', {photoset_id: photoset.id, photo_ids: reordered_ids.join(',')}, :post)
