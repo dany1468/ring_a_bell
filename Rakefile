@@ -191,3 +191,11 @@ task export_print_photos: :dotenv do
     puts "It failed to add tags. photo_id:#{photo.id}" unless photo.add_tags('printed')
   end
 end
+
+require 'rake/testtask'
+
+Rake::TestTask.new do |t|
+  t.libs << 'lib'
+  t.pattern = 'test/**/*_test.rb'
+  t.verbose = true
+end
