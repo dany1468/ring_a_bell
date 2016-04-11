@@ -129,17 +129,41 @@ task download_photos: :dotenv do
   end
 end
 
-task export_print_photos: :dotenv do
-  def save_image(image_url, file_name)
-    full_path = File.join('download', file_name)
+def save_image(image_url, file_name)
+  full_path = File.join('download', file_name)
 
-    open(full_path, 'wb') do |output|
-      open(image_url) do |data|
-        output.write data.read
-      end
+  open(full_path, 'wb') do |output|
+    open(image_url) do |data|
+      output.write data.read
     end
   end
+end
 
+task :export_by_tag, ['user_id', 'tag'] => :dotenv do |task, args|
+  flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET'], token: ENV['TOKEN']})
+  binding.pry
+
+  photos = []
+  page = 1
+
+  loop do
+    res = Flickr::Photos.new(flickr).search(user_id: args.user_id, tags: args.tag, page: page)
+
+    break if res.photos.blank?
+
+    page = res.page + 1
+
+    photos << res.photos
+  end
+
+  photos.flatten.each do |photo|
+    next unless photo.url(:original)
+
+    save_image photo.url(:original), "#{photo.taken_at.strftime('%Y%m%d_%H%M%S')}.#{photo.original_format}"
+  end
+end
+
+task export_print_photos: :dotenv do
   flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET'], token: ENV['TOKEN']})
 
   photoset = Flickr::Photosets.new(flickr).get_list.find {|i| i.title == ENV['TARGET_ALBUM'] }
