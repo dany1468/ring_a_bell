@@ -7,20 +7,6 @@ require 'open-uri'
 require 'pony'
 require 'pry'
 
-Pony.options = {
-  charset: 'utf-8',
-  via: :smtp,
-  via_options: {
-    address: 'smtp.gmail.com',
-    port: '587',
-    enable_starttls_auto: true,
-    user_name: ENV['GMAIL_ACCOUNT'],
-    password: ENV['GMAIL_PASSWORD'],
-    domain: 'gmail.com',
-    authentication: :login,
-  }
-}
-
 task auth: :dotenv do
   flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET']}, token_cache: 'token_cache.yml')
 
@@ -59,7 +45,7 @@ task reorder: :dotenv do
   puts 'reorder done'
 end
 
-task notify: :dotenv do
+task :notify => [:dotenv, :set_mail_client] do
   def image_file(image_url)
     open(image_url) do |data|
       return data.read
@@ -95,6 +81,22 @@ task notify: :dotenv do
     )
     puts 'Send mail done.'
   end
+end
+
+task :set_mail_client do
+  Pony.options = {
+    charset: 'utf-8',
+    via: :smtp,
+    via_options: {
+      address: 'smtp.gmail.com',
+      port: '587',
+      enable_starttls_auto: true,
+      user_name: ENV['GMAIL_ACCOUNT'],
+      password: ENV['GMAIL_PASSWORD'],
+      #domain: 'gmail.com',
+      authentication: :plain,
+    }
+  }
 end
 
 task download_photos: :dotenv do
