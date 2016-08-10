@@ -46,6 +46,7 @@ task reorder: :dotenv do
 end
 
 task :notify => [:dotenv, :set_mail_client] do
+  # NOTE ビデオの URL が指定されてしまうとリダイレクトがかかるため現在は利用していません
   def image_file(image_url)
     open(image_url) do |data|
       return data.read
@@ -76,8 +77,7 @@ task :notify => [:dotenv, :set_mail_client] do
     Pony.mail(
       to: ENV['SEND_TARGET_EMAILS'],
       subject: subject,
-      body: body,
-      attachments: {"#{jst_now.strftime('%Y%m%d')}.jpg" => image_file(photo.url(:medium))}
+      body: body
     )
     puts 'Send mail done.'
   end
