@@ -93,7 +93,7 @@ task :set_mail_client do
       enable_starttls_auto: true,
       user_name: ENV['GMAIL_ACCOUNT'],
       password: ENV['GMAIL_PASSWORD'],
-      #domain: 'gmail.com',
+      domain: 'gmail.com',
       authentication: :plain,
     }
   }
