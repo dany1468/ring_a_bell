@@ -27,7 +27,9 @@ task reorder: :dotenv do
   def load_photos(photoset)
     all_pages = ((photoset.num_photos.to_i + photoset.num_videos.to_i) / 100) + 1
 
+    puts 'load photos start'
     (1..all_pages).inject([]) {|all_photos, page|
+      puts "get_photos page:#{page}"
       all_photos << photoset.get_photos(extras: 'date_upload', per_page: 100, page: page)
     }.flatten
   end
@@ -40,6 +42,7 @@ task reorder: :dotenv do
 
   reordered_ids = all_photos.sort_by(&:uploaded_at).reverse.map(&:id).uniq
 
+  puts "reorder start size:#{reordered_ids.size}"
   # TODO place in flickr_fu gem
   flickr.send_request('flickr.photosets.reorderPhotos', {photoset_id: photoset.id, photo_ids: reordered_ids.join(',')}, :post)
   puts 'reorder done'
