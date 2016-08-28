@@ -24,14 +24,24 @@ end
 task reorder_and_notify: %i(reorder notify)
 
 task reorder: :dotenv do
+  # NOTE photosets の reorder は、並べ替えたい写真の前後関係だけ指定すればいいので、最後に回ってしまっている
+  #      新規アップロード写真のみを現在先頭の写真に対して前に持ってくるように指定している。
+  #      全部並べ替えると 30 sec の timeout にひっかかるための対処である。
   def load_photos(photoset)
     all_pages = ((photoset.num_photos.to_i + photoset.num_videos.to_i) / 100) + 1
+    latest_photo = photoset.get_photos(extras: 'date_upload', per_page: 1, page: 1).first
+    latest_uploaded_at = latest_photo.uploaded_at
 
-    puts 'load photos start'
-    (1..all_pages).inject([]) {|all_photos, page|
-      puts "get_photos page:#{page}"
-      all_photos << photoset.get_photos(extras: 'date_upload', per_page: 100, page: page)
-    }.flatten
+    unordered_photos = all_pages.downto(1).inject([]) {|all_photos, page|
+      photos = photoset.get_photos(extras: 'date_upload', per_page: 100, page: page)
+      new_photos = photos.select {|photo| photo.uploaded_at >= latest_uploaded_at }
+
+      all_photos << new_photos
+
+      break all_photos if photos.size != new_photos.size
+    }
+
+    (unordered_photos << latest_photo).flatten
   end
 
   flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET'], token: ENV['TOKEN']})
