@@ -32,7 +32,7 @@ task reorder: :dotenv do
     latest_photo = photoset.get_photos(extras: 'date_upload', per_page: 1, page: 1).first
     latest_uploaded_at = latest_photo.uploaded_at
 
-    unordered_photos = all_pages.downto(1).inject([]) {|all_photos, page|
+    unordered_photos = all_pages.downto(1).each_with_object([]) {|page, all_photos|
       photos = photoset.get_photos(extras: 'date_upload', per_page: 100, page: page)
       new_photos = photos.select {|photo| photo.uploaded_at >= latest_uploaded_at }
 
