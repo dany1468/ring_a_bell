@@ -29,19 +29,10 @@ task reorder: :dotenv do
   #      全部並べ替えると 30 sec の timeout にひっかかるための対処である。
   def load_photos(photoset)
     all_pages = ((photoset.num_photos.to_i + photoset.num_videos.to_i) / 100) + 1
-    latest_photo = photoset.get_photos(extras: 'date_upload', per_page: 1, page: 1).first
-    latest_uploaded_at = latest_photo.uploaded_at
 
-    unordered_photos = all_pages.downto(1).each_with_object([]) {|page, all_photos|
-      photos = photoset.get_photos(extras: 'date_upload', per_page: 100, page: page)
-      new_photos = photos.select {|photo| photo.uploaded_at >= latest_uploaded_at }
-
-      all_photos << new_photos
-
-      break all_photos if photos.size != new_photos.size
-    }
-
-    (unordered_photos << latest_photo).flatten
+    all_pages.downto(1).each_with_object([]) {|page, all_photos|
+      all_photos << photoset.get_photos(extras: 'date_upload', per_page: 100, page: page)
+    }.flatten
   end
 
   flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET'], token: ENV['TOKEN']})
@@ -54,7 +45,11 @@ task reorder: :dotenv do
 
   puts "reorder start size:#{reordered_ids.size}"
   # TODO place in flickr_fu gem
-  flickr.send_request('flickr.photosets.reorderPhotos', {photoset_id: photoset.id, photo_ids: reordered_ids.join(',')}, :post)
+  begin
+    flickr.send_request('flickr.photosets.reorderPhotos', {photoset_id: photoset.id, photo_ids: reordered_ids.join(',')}, :post)
+  rescue => e
+    puts "message:#{e.message} backtrace:#{e.backtrace}"
+  end
   puts 'reorder done'
 end
 
