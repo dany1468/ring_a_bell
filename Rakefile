@@ -72,9 +72,9 @@ task :notify => [:dotenv, :set_mail_client] do
   photos = photoset.get_photos(extras: 'date_upload', per_page: 20)
 
   jst_now = Time.now.in_time_zone('Tokyo')
-  yesterday = jst_now.yesterday.to_date
 
-  if photo = photos.find {|photo| photo.uploaded_at.in_time_zone('Tokyo').to_date == yesterday }
+  r = (jst_now.yesterday.beginning_of_day...jst_now)
+  if photo = photos.find {|photo| r.cover?(photo.uploaded_at.in_time_zone('Tokyo')) }
     subject = "[#{jst_now.strftime('%-m/%-d')}] #{ENV['MAIL_SUBJECT']}"
     body = <<-BODY.strip_heredoc
       #{ENV['MAIL_MESSAGE']}
