@@ -17,7 +17,7 @@ GEM
       tzinfo (~> 1.1)
     byebug (9.0.6)
     coderay (1.1.1)
-    concurrent-ruby (1.0.4)
+    concurrent-ruby (1.0.5)
     dotenv (2.2.0)
     i18n (0.8.1)
     mail (2.6.4)
@@ -41,7 +41,7 @@ GEM
     slop (3.6.0)
     test-unit (3.2.3)
       power_assert
-    thread_safe (0.3.5)
+    thread_safe (0.3.6)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
     xml-magic (0.1.1)
