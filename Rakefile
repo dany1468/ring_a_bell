@@ -31,7 +31,11 @@ task reorder: :dotenv do
     all_pages = ((photoset.num_photos.to_i + photoset.num_videos.to_i) / 100) + 1
 
     all_pages.downto(1).each_with_object([]) {|page, all_photos|
+      puts "app page fetching... #{page}/#{all_pages}"
+
       all_photos << photoset.get_photos(extras: 'date_upload', per_page: 100, page: page)
+
+      sleep 0.5
     }.flatten
   end
 
