@@ -49,9 +49,18 @@ task reorder: :dotenv do
 
   puts "reorder start size:#{reordered_ids.size}"
   # TODO place in flickr_fu gem
+
+  retried = false
+
   begin
     flickr.send_request('flickr.photosets.reorderPhotos', {photoset_id: photoset.id, photo_ids: reordered_ids.join(',')}, :post)
   rescue => e
+
+    unless retried
+      retried = true
+      retry
+    end
+
     puts "message:#{e.message} backtrace:#{e.backtrace}"
   end
   puts 'reorder done'
