@@ -9,3 +9,4 @@ gem 'pry-byebug'
 gem 'rake'
 gem 'retriable'
 gem 'test-unit'
+gem 'mail', '< 2.7.0' # see: https://github.com/benprew/pony/pull/19
