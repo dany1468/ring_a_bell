@@ -6,6 +6,7 @@ require 'flickr_fu'
 require 'open-uri'
 require 'pony'
 require 'pry'
+require 'retriable'
 
 task auth: :dotenv do
   flickr = Flickr.new({key: ENV['API_KEY'], secret: ENV['API_SECRET']}, token_cache: 'token_cache.yml')
@@ -24,19 +25,9 @@ end
 task reorder_and_notify: %i(reorder notify)
 
 task reorder: :dotenv do
-  MAX_RETRY_COUNT_FOR_GETTING_PHOTOS = 3
-
   def get_photos(photoset, page)
-    begin
+    Retriable.retriable do
       photoset.get_photos(extras: 'date_upload', per_page: 100, page: page)
-    rescue
-      unless retry_count > MAX_RETRY_COUNT_FOR_GETTING_PHOTOS
-        retry_count += 1
-
-        sleep 1
-
-        retry
-      end
     end
   end
 
@@ -63,22 +54,15 @@ task reorder: :dotenv do
 
   reordered_ids = all_photos.sort_by(&:uploaded_at).reverse.map(&:id).uniq
 
-  puts "reorder start size:#{reordered_ids.size}"
-  # TODO place in flickr_fu gem
-
   retried = false
 
-  begin
+
+  Retriable.retriable do
+    puts "reorder start size:#{reordered_ids.size}"
+
     flickr.send_request('flickr.photosets.reorderPhotos', {photoset_id: photoset.id, photo_ids: reordered_ids.join(',')}, :post)
-  rescue => e
-
-    unless retried
-      retried = true
-      retry
-    end
-
-    puts "message:#{e.message} backtrace:#{e.backtrace}"
   end
+
   puts 'reorder done'
 end
 
