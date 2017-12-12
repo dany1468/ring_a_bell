@@ -24,6 +24,22 @@ end
 task reorder_and_notify: %i(reorder notify)
 
 task reorder: :dotenv do
+  MAX_RETRY_COUNT_FOR_GETTING_PHOTOS = 3
+
+  def get_photos(photoset, page)
+    begin
+      photoset.get_photos(extras: 'date_upload', per_page: 100, page: page)
+    rescue
+      unless retry_count > MAX_RETRY_COUNT_FOR_GETTING_PHOTOS
+        retry_count += 1
+
+        sleep 1
+
+        retry
+      end
+    end
+  end
+
   # NOTE photosets の reorder は、並べ替えたい写真の前後関係だけ指定すればいいので、最後に回ってしまっている
   #      新規アップロード写真のみを現在先頭の写真に対して前に持ってくるように指定している。
   #      全部並べ替えると 30 sec の timeout にひっかかるための対処である。
@@ -33,7 +49,7 @@ task reorder: :dotenv do
     all_pages.downto(1).each_with_object([]) {|page, all_photos|
       puts "app page fetching... #{page}/#{all_pages}"
 
-      all_photos << photoset.get_photos(extras: 'date_upload', per_page: 100, page: page)
+      all_photos << get_photos(photoset, page)
 
       sleep 0.5
     }.flatten
