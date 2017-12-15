@@ -19,6 +19,7 @@ GEM
     coderay (1.1.2)
     concurrent-ruby (1.0.5)
     dotenv (2.2.1)
+    flickraw (0.9.9)
     i18n (0.9.1)
       concurrent-ruby (~> 1.0)
     mail (2.6.6)
@@ -53,6 +54,7 @@ DEPENDENCIES
   activesupport
   dotenv
   flickr_fu!
+  flickraw
   mail (< 2.7.0)
   pony
   pry-byebug
